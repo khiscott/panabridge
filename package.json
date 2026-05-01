@@ -2,7 +2,7 @@
   "name": "homebridge-panasonic-bluray-players",
   "displayName": "PanaBridge",
   "type": "module",
-  "version": "2.0.8",
+  "version": "2.1.0",
   "private": false,
   "description": "Get status of Panasonic Blu-ray players",
   "author": "Corentin Barreau",
@@ -29,6 +29,7 @@
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "lint": "eslint . --max-warnings=0",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run lint && npm run build",
     "watch": "npm run build && npm link && nodemon"
   },

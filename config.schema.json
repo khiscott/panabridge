@@ -21,14 +21,258 @@
         "title": "Polling Interval (ms)",
         "type": "number",
         "required": false,
-        "default": 500
+        "default": 5000,
+        "description": "How often to poll the player for status. Lower is more responsive but harder on the player."
       },
       "debug": {
         "title": "Enable Debug Logging",
         "type": "boolean",
         "required": false,
         "default": false
+      },
+      "sensors": {
+        "title": "State Sensors",
+        "type": "object",
+        "description": "Read-only HomeKit Occupancy Sensors that reflect the player's current state. Useful as automation triggers (e.g. dim the lights when playback starts).",
+        "properties": {
+          "playing": {
+            "title": "Playing Sensor",
+            "description": "Occupied while the player is actively playing. This is the original 'Panasonic Blu-ray player' tile — disable to remove it from HomeKit.",
+            "type": "boolean",
+            "default": true
+          },
+          "power": {
+            "title": "Power Sensor",
+            "description": "Occupied when the player is powered on (any state except off / standby).",
+            "type": "boolean",
+            "default": false
+          },
+          "active": {
+            "title": "Active Sensor",
+            "description": "Occupied when the disc is moving — playing or scrubbing (FF / REW).",
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "groups": {
+        "title": "Command Group",
+        "type": "array",
+        "description": "Each group becomes one HomeKit tile with a momentary switch per selected command. UB-series players (UB820, UB9000) likely need the third-party firmware patch (see albaintor's FIRMWARE_PATCH.md on GitHub) — without it the player rejects commands with an authentication error. Older BD-series players should accept commands on stock firmware.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Group Name",
+              "type": "string",
+              "required": true,
+              "placeholder": "e.g. Transport, Menu, Picture"
+            },
+            "commands": {
+              "title": "Commands",
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "POWERON",
+                  "POWEROFF",
+                  "OP_CL",
+                  "PLAYBACK",
+                  "PAUSE",
+                  "STOP",
+                  "SKIPFWD",
+                  "SKIPREV",
+                  "CUE",
+                  "REV",
+                  "MNSKIP",
+                  "MNBACK",
+                  "SHFWD1",
+                  "SHFWD2",
+                  "SHFWD3",
+                  "SHFWD4",
+                  "SHFWD5",
+                  "SHREV1",
+                  "SHREV2",
+                  "SHREV3",
+                  "SHREV4",
+                  "SHREV5",
+                  "JLEFT",
+                  "JRIGHT",
+                  "UP",
+                  "DOWN",
+                  "LEFT",
+                  "RIGHT",
+                  "SELECT",
+                  "RETURN",
+                  "EXIT",
+                  "MLTNAVI",
+                  "MENU",
+                  "TITLE",
+                  "PUPMENU",
+                  "DSPSEL",
+                  "RED",
+                  "GREEN",
+                  "BLUE",
+                  "YELLOW",
+                  "AUDIOSEL",
+                  "TITLEONOFF",
+                  "CLOSED_CAPTION",
+                  "SOUNDEFFECT",
+                  "2NDARY",
+                  "RESOLUTN",
+                  "HDR_PICTUREMODE",
+                  "PICTURESETTINGS",
+                  "OSDONOFF",
+                  "P_IN_P",
+                  "CHROMA",
+                  "HIGHCLARITY",
+                  "PICTMD",
+                  "DETAIL",
+                  "PLAYBACKINFO",
+                  "SKIP_THE_TRAILER",
+                  "3D",
+                  "KEYS",
+                  "NETFLIX",
+                  "NETWORK",
+                  "MIRACAST",
+                  "D0",
+                  "D1",
+                  "D2",
+                  "D3",
+                  "D4",
+                  "D5",
+                  "D6",
+                  "D7",
+                  "D8",
+                  "D9",
+                  "D12",
+                  "SHARP",
+                  "CLEAR"
+                ],
+                "enumNames": [
+                  "Power On",
+                  "Power Off",
+                  "Eject / Close",
+                  "Play",
+                  "Pause",
+                  "Stop",
+                  "Skip Forward",
+                  "Skip Back",
+                  "Fast Forward",
+                  "Rewind",
+                  "Skip +60s",
+                  "Skip -10s",
+                  "Step Fwd 1",
+                  "Step Fwd 2",
+                  "Step Fwd 3",
+                  "Step Fwd 4",
+                  "Step Fwd 5",
+                  "Step Rev 1",
+                  "Step Rev 2",
+                  "Step Rev 3",
+                  "Step Rev 4",
+                  "Step Rev 5",
+                  "Jog Left",
+                  "Jog Right",
+                  "Up",
+                  "Down",
+                  "Left",
+                  "Right",
+                  "Select",
+                  "Return",
+                  "Exit",
+                  "Home",
+                  "Menu",
+                  "Title Menu",
+                  "Popup Menu",
+                  "Status Display",
+                  "Red",
+                  "Green",
+                  "Blue",
+                  "Yellow",
+                  "Audio Language",
+                  "Subtitle Toggle",
+                  "Closed Caption",
+                  "Sound Effect",
+                  "Secondary Audio",
+                  "Resolution",
+                  "HDR Picture Mode",
+                  "Picture Settings",
+                  "OSD On/Off",
+                  "Picture in Picture",
+                  "Chroma",
+                  "High Clarity",
+                  "Picture Mode",
+                  "Detail",
+                  "Playback Info",
+                  "Skip Trailer",
+                  "3D",
+                  "Keys",
+                  "Netflix",
+                  "Network",
+                  "Mirroring",
+                  "0",
+                  "1",
+                  "2",
+                  "3",
+                  "4",
+                  "5",
+                  "6",
+                  "7",
+                  "8",
+                  "9",
+                  "12",
+                  "#",
+                  "Clear / Cancel"
+                ]
+              }
+            }
+          }
+        }
       }
     }
-  }
+  },
+  "layout": [
+    "name",
+    "host",
+    "pollInterval",
+    "debug",
+    {
+      "type": "fieldset",
+      "title": "State Sensors",
+      "expandable": true,
+      "expanded": true,
+      "items": [
+        "sensors.playing",
+        "sensors.power",
+        "sensors.active"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Command Groups",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        {
+          "key": "groups",
+          "notitle": true,
+          "type": "array",
+          "items": [
+            {
+              "type": "fieldset",
+              "items": [
+                "groups[].name",
+                {
+                  "key": "groups[].commands",
+                  "type": "checkboxes"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

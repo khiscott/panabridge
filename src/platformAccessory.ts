@@ -1,15 +1,16 @@
-import type { CharacteristicValue, PlatformAccessory, Service } from 'homebridge';
+import type { PlatformAccessory, Service } from 'homebridge';
 import type { PanaBridgePlatform } from './platform.js';
-import { PanasonicBD } from './panasonic.js';
+import type { PanasonicBD, PlayStatus } from './panasonic.js';
 
 export class PanasonicPlatformAccessory {
-  private service: Service;
-  private device: PanasonicBD;
+  private readonly service: Service;
+  private readonly unsubscribe: () => void;
   private lastStatus: boolean | null = null;
 
   constructor(
     private readonly platform: PanaBridgePlatform,
     private readonly accessory: PlatformAccessory,
+    private readonly device: PanasonicBD,
   ) {
     this.accessory.getService(this.platform.api.hap.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.api.hap.Characteristic.Manufacturer, 'Panasonic')
@@ -24,46 +25,34 @@ export class PanasonicPlatformAccessory {
       this.accessory.context.device.displayName,
     );
 
-    this.device = new PanasonicBD(this.accessory.context.device.host);
-
-    this.startPolling();
-
     this.service
       .getCharacteristic(this.platform.api.hap.Characteristic.OccupancyDetected)
-      .onGet(this.handleGet.bind(this));
+      .onGet(() => this.lastStatus === true);
+
+    this.unsubscribe = this.device.onStatusUpdate((status) => this.onStatusUpdate(status));
   }
 
-  async handleGet(): Promise<CharacteristicValue> {
-    return new Promise((resolve) => {
-      this.device.getPlayStatus((err, state) => {
-        resolve(!err && state === 'playing');
-      });
-    });
+  private onStatusUpdate(status: PlayStatus): void {
+    const isPresent = status.state === 'playing';
+    if (this.lastStatus !== isPresent) {
+      this.platform.log.info(
+        'Panasonic status changed from',
+        this.lastStatus,
+        'to',
+        isPresent,
+      );
+      this.lastStatus = isPresent;
+    }
+    if (this.platform.config.debug) {
+      this.platform.log.debug('Panasonic status:', status.state, status.playtime, status.duration);
+    }
+    this.service.updateCharacteristic(
+      this.platform.api.hap.Characteristic.OccupancyDetected,
+      isPresent,
+    );
   }
 
-  startPolling(): void {
-    const poll = () => {
-      this.device.getPlayStatus((err, state, playtime, duration) => {
-        const isPresent = state === 'playing';
-        if (this.lastStatus !== isPresent) {
-          this.platform.log.info(
-            'Panasonic status changed from',
-            this.lastStatus,
-            'to',
-            isPresent,
-          );
-          this.lastStatus = isPresent;
-        }
-        if (this.platform.config.debug) {
-          this.platform.log.debug('Panasonic status:', state, playtime, duration);
-        }
-        this.service.updateCharacteristic(
-          this.platform.api.hap.Characteristic.OccupancyDetected,
-          isPresent,
-        );
-        poll();
-      });
-    };
-    poll();
+  stop(): void {
+    this.unsubscribe();
   }
 }
